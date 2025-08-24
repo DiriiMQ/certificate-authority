@@ -12,5 +12,10 @@ public enum ResultType {
     /**
      * Operation failed due to error
      */
-    FAIL
+    FAIL,
+    
+    /**
+     * Operation failed due to error (alias for FAIL)
+     */
+    FAILURE
 }

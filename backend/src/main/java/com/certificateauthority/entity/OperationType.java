@@ -12,5 +12,25 @@ public enum OperationType {
     /**
      * Image signature verification operation
      */
-    VERIFY
+    VERIFY,
+    
+    /**
+     * Key generation operation
+     */
+    KEY_GENERATION,
+    
+    /**
+     * Key rotation operation
+     */
+    KEY_ROTATION,
+    
+    /**
+     * Image signing operation (alias for SIGN)
+     */
+    SIGN_IMAGE,
+    
+    /**
+     * View audit log operation
+     */
+    VIEW_AUDIT_LOG
 }

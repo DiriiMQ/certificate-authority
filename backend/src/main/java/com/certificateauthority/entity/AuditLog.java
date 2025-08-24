@@ -119,6 +119,32 @@ public class AuditLog {
     private String updatedBy;
 
     /**
+     * Additional fields for key management operations
+     */
+    @Column(name = "username", length = 255)
+    private String username;
+
+    @Column(name = "key_identifier", length = 100)
+    private String keyIdentifier;
+
+    @Column(name = "image_name", length = 500)
+    private String imageName;
+
+    @Column(name = "result_type")
+    @Enumerated(EnumType.STRING)
+    private ResultType resultType;
+
+    @Column(name = "operation_type")
+    @Enumerated(EnumType.STRING)
+    private OperationType operationType;
+
+    @Column(name = "details", columnDefinition = "TEXT")
+    private String details;
+
+    @Column(name = "additional_metadata", columnDefinition = "TEXT")
+    private String additionalMetadata;
+
+    /**
      * Default constructor for JPA
      */
     public AuditLog() {
@@ -269,6 +295,63 @@ public class AuditLog {
 
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    // Additional setters for key management operations
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getKeyIdentifier() {
+        return keyIdentifier;
+    }
+
+    public void setKeyIdentifier(String keyIdentifier) {
+        this.keyIdentifier = keyIdentifier;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public ResultType getResultType() {
+        return resultType;
+    }
+
+    public void setResultType(ResultType resultType) {
+        this.resultType = resultType;
+    }
+
+    public OperationType getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(OperationType operationType) {
+        this.operationType = operationType;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public String getAdditionalMetadata() {
+        return additionalMetadata;
+    }
+
+    public void setAdditionalMetadata(String additionalMetadata) {
+        this.additionalMetadata = additionalMetadata;
     }
 
     @Override

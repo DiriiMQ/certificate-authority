@@ -240,4 +240,12 @@ public interface SigningKeyRepository extends JpaRepository<SigningKey, UUID> {
      * @return Count of active signing keys
      */
     long countByIsActiveTrue();
+
+    /**
+     * Count active signing keys that expire before a specific date
+     *
+     * @param expirationDate The expiration threshold date
+     * @return Count of active signing keys expiring before the date
+     */
+    long countByIsActiveTrueAndExpiresAtBefore(LocalDateTime expirationDate);
 }

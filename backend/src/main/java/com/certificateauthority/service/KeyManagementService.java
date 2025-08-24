@@ -166,7 +166,7 @@ public class KeyManagementService {
      * @return KeyManagementResult containing the active key
      */
     @PreAuthorize("hasRole('KEY_OPERATOR') or hasRole('KEY_ADMIN')")
-    @Cacheable(value = "activeKeys", key = "'" + defaultAlgorithm + "'")
+    @Cacheable(value = "activeKeys", key = "'default'")
     public KeyManagementResult getSigningKey() {
         return getSigningKey(defaultAlgorithm);
     }

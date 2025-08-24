@@ -183,6 +183,25 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
     long countByTimestampBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     /**
+     * Count operations by created date range
+     *
+     * @param startDate Start of the date range
+     * @param endDate   End of the date range
+     * @return Total count of operations within the date range
+     */
+    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Count operations by result type and created date range
+     *
+     * @param resultType The result type
+     * @param startDate Start of the date range
+     * @param endDate   End of the date range
+     * @return Total count of operations within the date range
+     */
+    long countByResultTypeAndCreatedAtBetween(ResultType resultType, LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
      * Get operation statistics by algorithm
      *
      * @return List of algorithm usage statistics
