@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: node:18-alpine
+    container_name: ca_frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "if [ ! -f package.json ]; then npm create vite@latest . -- --template react-ts && npm install; fi && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ca_network
+
+  backend:
+    image: openjdk:21-jdk-slim
+    container_name: ca_backend
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - keys_volume:/app/keys
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/certificate_authority
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - KEYS_STORAGE_PATH=/app/keys
+    depends_on:
+      database:
+        condition: service_healthy
+    command: sh -c "if [ ! -f pom.xml ]; then echo 'Backend project not initialized yet'; sleep infinity; else ./mvnw spring-boot:run; fi"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - ca_network
+
+  database:
+    image: postgres:15-alpine
+    container_name: ca_database
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-certificate_authority}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-certificate_authority}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ca_network
+
+volumes:
+  postgres_data:
+    driver: local
+  keys_volume:
+    driver: local
+
+networks:
+  ca_network:
+    driver: bridge
