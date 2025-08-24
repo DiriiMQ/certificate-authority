@@ -1,0 +1,109 @@
+# Product Requirements Document – Localhost Image Certificate Authority
+
+## Goals
+- Implement a localhost certificate authority service for **image signing and verification**.  
+- Support **PNG** and **JPEG** image formats.  
+- Server signs images with a **timestamp (UTC)** at signing time.  
+- Provide both:
+  - **Embedded signatures** (inside image metadata).  
+  - **Detached signatures** (`.sig` file).  
+- Enable **verification** of signed images (valid/invalid, timestamp, algorithm, signer).  
+- Provide a **simple frontend (Vite)** and **backend (Spring Boot)** with **PostgreSQL** for audit logs.  
+- Run locally with **Docker/Docker Compose**.
+
+## Non-Goals
+- No cloud deployment or scaling beyond localhost.  
+- No advanced PKI hierarchy (root + intermediates).  
+- No integration with external time authorities.  
+- No non-image file support.  
+
+## User Stories
+1. As a **user**, I can upload an image (PNG/JPEG) and receive a **signed image** (embedded) or a **.sig detached file**.  
+2. As a **user**, I can verify an image by uploading it and receiving status: **valid/invalid**, **timestamp**, and **signer info**.  
+3. As a **user**, I can choose an algorithm (default **Ed25519**, optional **RSA/ECDSA** from a provided list).  
+4. As an **admin**, I can rotate signing keys and set validity ranges.  
+5. As an **auditor**, I can query an **audit log** of sign/verify operations from PostgreSQL.  
+
+## Functional Requirements
+### Image Signing
+- Accept PNG/JPEG uploads up to **100 MB**.  
+- Preserve image quality (no recompression).  
+- Add timestamp in UTC.  
+- Embed signature in image metadata (iTXt for PNG, COM/APP segment for JPEG).  
+- Produce optional detached `.sig` file.  
+
+### Image Verification
+- Accept PNG/JPEG upload.  
+- Validate signature and timestamp.  
+- Output signer key ID, algorithm, timestamp, and validity status.  
+
+### Algorithms
+- Default: **Ed25519**.  
+- Configurable list: Ed25519, ECDSA P-256, RSA-3072.  
+- Hash: **SHA-256**.  
+
+### Key Management
+- Store signing keys securely inside backend container.  
+- Support **rotation** with validity periods.  
+
+### Frontend (Vite + React + TS)
+- Upload/sign flow (drag & drop).  
+- Verification tab.  
+- Download signed image / .sig file.  
+- Preview image.  
+
+### Backend (Spring Boot 3, Java 21)
+- **ORM**: Spring Data JPA with Hibernate for database operations
+- **Entity Management**: JPA entities for audit_log and key management tables
+- **Repository Layer**: Spring Data repositories for data access abstraction
+- **Transaction Management**: Declarative transactions for data consistency
+- REST API endpoints:
+  - `POST /sign` → returns signed image or detached sig.  
+  - `POST /verify` → returns verification result.  
+  - `POST /keys/rotate` → rotate keys.  
+  - `GET /logs` → audit log query with JPA-based filtering and pagination.  
+
+### Database (PostgreSQL)
+- **ORM Integration**: Database schema managed through JPA entities and Spring Data
+- **Entity Relationships**: Proper JPA annotations for table mappings and constraints
+- **Migration Support**: Flyway or Liquibase for database version control alongside JPA
+- Table: `audit_log` (mapped to AuditLog entity)
+  - id (uuid) - @Id with UUID generation strategy 
+  - operation (sign/verify) - @Enumerated JPA enum  
+  - image_hash (sha256) - @Column with validation
+  - algorithm - @Column with constraints
+  - timestamp (UTC) - @CreationTimestamp/@UpdateTimestamp  
+  - user_id - @Column with foreign key potential
+  - result (success/fail) - @Enumerated JPA enum
+- Additional ORM tables:
+  - `signing_keys` - JPA entity for key management with lifecycle tracking
+  - `key_rotation_log` - Audit trail for key rotation operations  
+
+## Non-Functional Requirements
+- **Authentication**: simple username/password for access.  
+- **Logging**: persist all operations in PostgreSQL.  
+- **Performance**: not optimized, target ≥2 images/sec sufficient.  
+- **Testing**: minimal integration tests + Postman collection.  
+- **File Size Limit**: 100 MB per image.  
+
+## Deployment & Ops
+- **Docker Compose** with three services:
+  - `frontend` (Vite, port 5173).  
+  - `backend` (Spring Boot, port 8080).  
+  - `db` (PostgreSQL, port 5432).  
+- Keep simple, no reverse proxy.  
+- Keys mounted via Docker volume.  
+- Localhost only.  
+
+## Acceptance Criteria
+- Able to **sign PNG/JPEG ≤100MB** and produce both embedded and detached signatures.  
+- Able to **verify signed images** via frontend or REST API.  
+- Audit log entries created for every operation.  
+- Key rotation possible with validity range enforcement.  
+- Runs on localhost with `docker-compose up`.  
+- Frontend provides **sign**, **verify**, and **logs** views.  
+
+## Risks
+- Embedding signatures must not corrupt PNG/JPEG structure.  
+- Large files (up to 100MB) may cause performance/memory issues.  
+- Simple auth is weak, but acceptable for localhost-only.  
