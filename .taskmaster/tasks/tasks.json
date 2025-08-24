@@ -235,7 +235,86 @@
           13
         ],
         "status": "pending",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Algorithm-Specific Key Generation Service",
+            "description": "Implement KeyGenerationService with methods for Ed25519, ECDSA P-256, and RSA-3072 key generation using Java's standard cryptographic libraries and NIST-certified secure random number generators",
+            "details": "Create service class with methods: generateEd25519KeyPair(), generateEcdsaP256KeyPair(), generateRsa3072KeyPair(). Use SecureRandom.getInstanceStrong() for entropy. Implement proper key encoding (Base64) for database storage. Include key size validation and algorithm-specific parameters.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 2,
+            "title": "Implement Secure Key Storage and Retrieval Service",
+            "description": "Create KeyStorageService that securely stores and retrieves cryptographic keys using the existing SigningKey JPA entity with proper encryption at rest",
+            "details": "Implement service with methods: storeKey(), retrieveActiveKey(), retrieveKeyById(), listActiveKeys(). Add encryption/decryption for private key data before database storage. Integrate with SigningKeyRepository and handle key lifecycle states. Include validation for key integrity and expiration checks.",
+            "status": "done",
+            "dependencies": [
+              "4.1"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 3,
+            "title": "Create Key Rotation and Lifecycle Management Service",
+            "description": "Implement automated key rotation policies with configurable schedules, key expiration handling, and lifecycle state management",
+            "details": "Create KeyRotationService with methods: rotateKey(), scheduleRotation(), handleExpiredKeys(), validateKeyLifecycle(). Implement policy-driven rotation based on time intervals, usage counts, or manual triggers. Integrate with KeyRotationLog entity for audit trails. Include graceful key transition and overlap periods.",
+            "status": "done",
+            "dependencies": [
+              "4.2"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 4,
+            "title": "Implement Key Access Control and Security Validation",
+            "description": "Create access control mechanisms with role-based permissions, dual control for critical operations, and comprehensive security validation",
+            "details": "Implement KeyAccessControlService with methods: validateAccess(), enforceRoleBasedPermissions(), requireDualApproval(), logSecurityEvents(). Integrate with Spring Security for authentication. Include rate limiting, suspicious activity detection, and automatic security policy enforcement. Add annotations for method-level security.",
+            "status": "done",
+            "dependencies": [
+              "4.2"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 5,
+            "title": "Create Comprehensive Key Management Facade Service",
+            "description": "Implement main KeyManagementService that orchestrates all key operations and provides a unified API for the application",
+            "details": "Create facade service with methods: generateNewKey(), getSigningKey(), rotateKeys(), validateKeyIntegrity(), getKeyStatistics(). Coordinate between generation, storage, rotation, and access control services. Implement transaction management, error handling, and performance optimization. Include caching for frequently accessed keys.",
+            "status": "done",
+            "dependencies": [
+              "4.1",
+              "4.2",
+              "4.3",
+              "4.4"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 6,
+            "title": "Implement Key Performance Optimization and Caching",
+            "description": "Add performance optimizations, caching mechanisms, and efficient key retrieval strategies for high-throughput operations",
+            "details": "Implement caching with Spring Cache abstraction, optimize database queries with proper indexing, add connection pooling, and implement lazy loading for key data. Create performance monitoring, metrics collection, and automatic cache invalidation policies. Include memory management and garbage collection optimization for key objects.",
+            "status": "pending",
+            "dependencies": [
+              "4.5"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 7,
+            "title": "Create Comprehensive Unit and Integration Tests",
+            "description": "Implement thorough testing suite for all key management functionality including unit tests, integration tests, and security validation tests",
+            "details": "Create test classes for all services: KeyGenerationServiceTest, KeyStorageServiceTest, KeyRotationServiceTest, KeyAccessControlServiceTest, KeyManagementServiceTest. Include integration tests with @SpringBootTest, security tests, performance tests, and edge case validation. Add test key generation, mock security contexts, and database test fixtures.",
+            "status": "pending",
+            "dependencies": [
+              "4.5"
+            ],
+            "parentTaskId": 4
+          }
+        ]
       },
       {
         "id": 5,
@@ -532,7 +611,7 @@
     ],
     "metadata": {
       "created": "2025-08-24T14:45:56.878Z",
-      "updated": "2025-08-24T15:53:46.079Z",
+      "updated": "2025-08-24T17:17:52.901Z",
       "description": "Tasks for master context"
     }
   }

@@ -41,12 +41,10 @@ public class SigningKey {
     @Column(name = "algorithm", nullable = false, length = 50)
     private String algorithm;
 
-    @Lob
-    @Column(name = "public_key_data", nullable = false)
+    @Column(name = "public_key_data", nullable = false, columnDefinition = "TEXT")
     private String publicKeyData;
 
-    @Lob
-    @Column(name = "private_key_data", nullable = false)
+    @Column(name = "private_key_data", nullable = false, columnDefinition = "TEXT")
     private String privateKeyData;
 
     @Column(name = "key_size_bits", nullable = false)

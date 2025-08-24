@@ -24,13 +24,11 @@ services:
       - ca_network
 
   backend:
-    image: openjdk:21-jdk-slim
+    build: ./backend
     container_name: ca_backend
-    working_dir: /app
     ports:
       - "8080:8080"
     volumes:
-      - ./backend:/app
       - keys_volume:/app/keys
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -41,7 +39,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    command: sh -c "if [ ! -f pom.xml ]; then echo 'Backend project not initialized yet'; sleep infinity; else ./mvnw spring-boot:run; fi"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s

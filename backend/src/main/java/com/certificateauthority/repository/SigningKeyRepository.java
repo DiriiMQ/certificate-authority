@@ -233,4 +233,11 @@ public interface SigningKeyRepository extends JpaRepository<SigningKey, UUID> {
     @Query("UPDATE SigningKey sk SET sk.lastUsedAt = :now, sk.usageCount = sk.usageCount + 1 " +
            "WHERE sk.id = :keyId")
     void updateKeyUsage(@Param("keyId") UUID keyId, @Param("now") LocalDateTime now);
+
+    /**
+     * Count all active signing keys
+     *
+     * @return Count of active signing keys
+     */
+    long countByIsActiveTrue();
 }
