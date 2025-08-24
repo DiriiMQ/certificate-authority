@@ -1,0 +1,43 @@
+# Task ID: 2
+# Title: Initialize PostgreSQL Database Schema
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create database schema with audit_log table and initial configuration
+# Details:
+Create PostgreSQL database schema with audit_log table containing: id (uuid primary key), operation (sign/verify enum), image_hash (sha256 varchar), algorithm (varchar), timestamp (UTC timestamp), user_id (varchar), result (success/fail enum). Create database initialization SQL script and configure it to run on container startup.
+
+# Test Strategy:
+Connect to PostgreSQL container and verify table structure and constraints are created correctly
+
+# Subtasks:
+## 1. Create Database Schema SQL Script [done]
+### Dependencies: None
+### Description: Create SQL script defining the audit_log table structure with all required columns and constraints
+### Details:
+Create init.sql file with CREATE TABLE statement for audit_log table. Define id as UUID primary key with DEFAULT gen_random_uuid(), operation as ENUM('sign', 'verify'), image_hash as VARCHAR(64) for SHA-256 hashes, algorithm as VARCHAR(50), timestamp as TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, user_id as VARCHAR(255), and result as ENUM('success', 'fail'). Add NOT NULL constraints where appropriate and create indexes on commonly queried columns like timestamp and user_id.
+
+## 2. Configure Docker PostgreSQL Initialization [done]
+### Dependencies: 2.1
+### Description: Configure PostgreSQL Docker container to automatically run initialization scripts on startup
+### Details:
+Create docker-entrypoint-initdb.d directory structure and configure docker-compose.yml to mount SQL scripts. Update PostgreSQL service in docker-compose.yml to use volume mount for /docker-entrypoint-initdb.d directory. Ensure init.sql is copied to this directory so PostgreSQL runs it automatically on first startup. Set appropriate environment variables (POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD).
+
+## 3. Add Database Connection Configuration [done]
+### Dependencies: 2.2
+### Description: Configure database connection parameters and ensure proper networking between services
+### Details:
+Update docker-compose.yml with PostgreSQL service configuration including environment variables for database name, user, and password. Configure network connectivity between backend and database services. Set up health checks for PostgreSQL service to ensure it's ready before backend attempts connection. Create .env.example file with database configuration variables.
+
+## 4. Implement Database Migrations Support [done]
+### Dependencies: 2.3
+### Description: Set up database migration system for future schema changes and versioning
+### Details:
+Create migrations directory structure within the database configuration. Implement versioning system for SQL scripts with sequential numbering (V1__initial_schema.sql). Add migration tracking table to record applied migrations. Configure system to run new migrations on container startup while preserving existing data. Document migration best practices and rollback procedures.
+
+## 5. Validate Complete Database Setup [done]
+### Dependencies: 2.1, 2.2, 2.3, 2.4
+### Description: Perform end-to-end testing of database initialization and verify all components work together
+### Details:
+Create comprehensive test suite that validates complete database setup. Test fresh container startup, verify audit_log table structure matches requirements, test all column constraints and data types. Validate that database persists data across container restarts using Docker volumes. Test connection from backend service and perform basic CRUD operations on audit_log table. Document database schema and setup process.
+

@@ -1,0 +1,55 @@
+# Task ID: 4
+# Title: Implement Cryptographic Key Management System
+# Status: pending
+# Dependencies: 13
+# Priority: high
+# Description: Create key generation, storage, rotation, and management functionality with Ed25519, ECDSA P-256, and RSA-3072 support
+# Details:
+Implement KeyManagementService with support for Ed25519 (default), ECDSA P-256, and RSA-3072 algorithms. Create key generation methods, secure storage using Java KeyStore format, and rotation functionality with validity periods. Implement key selection logic based on algorithm preference and validity ranges. Store keys in Docker volume mount for persistence.
+
+# Test Strategy:
+Unit tests for key generation, rotation, and retrieval. Verify keys persist across container restarts
+
+# Subtasks:
+## 1. Create Algorithm-Specific Key Generation Service [pending]
+### Dependencies: None
+### Description: Implement KeyGenerationService with methods for Ed25519, ECDSA P-256, and RSA-3072 key generation using Java's standard cryptographic libraries and NIST-certified secure random number generators
+### Details:
+Create service class with methods: generateEd25519KeyPair(), generateEcdsaP256KeyPair(), generateRsa3072KeyPair(). Use SecureRandom.getInstanceStrong() for entropy. Implement proper key encoding (Base64) for database storage. Include key size validation and algorithm-specific parameters.
+
+## 2. Implement Secure Key Storage and Retrieval Service [pending]
+### Dependencies: 4.1
+### Description: Create KeyStorageService that securely stores and retrieves cryptographic keys using the existing SigningKey JPA entity with proper encryption at rest
+### Details:
+Implement service with methods: storeKey(), retrieveActiveKey(), retrieveKeyById(), listActiveKeys(). Add encryption/decryption for private key data before database storage. Integrate with SigningKeyRepository and handle key lifecycle states. Include validation for key integrity and expiration checks.
+
+## 3. Create Key Rotation and Lifecycle Management Service [pending]
+### Dependencies: 4.2
+### Description: Implement automated key rotation policies with configurable schedules, key expiration handling, and lifecycle state management
+### Details:
+Create KeyRotationService with methods: rotateKey(), scheduleRotation(), handleExpiredKeys(), validateKeyLifecycle(). Implement policy-driven rotation based on time intervals, usage counts, or manual triggers. Integrate with KeyRotationLog entity for audit trails. Include graceful key transition and overlap periods.
+
+## 4. Implement Key Access Control and Security Validation [pending]
+### Dependencies: 4.2
+### Description: Create access control mechanisms with role-based permissions, dual control for critical operations, and comprehensive security validation
+### Details:
+Implement KeyAccessControlService with methods: validateAccess(), enforceRoleBasedPermissions(), requireDualApproval(), logSecurityEvents(). Integrate with Spring Security for authentication. Include rate limiting, suspicious activity detection, and automatic security policy enforcement. Add annotations for method-level security.
+
+## 5. Create Comprehensive Key Management Facade Service [pending]
+### Dependencies: 4.1, 4.2, 4.3, 4.4
+### Description: Implement main KeyManagementService that orchestrates all key operations and provides a unified API for the application
+### Details:
+Create facade service with methods: generateNewKey(), getSigningKey(), rotateKeys(), validateKeyIntegrity(), getKeyStatistics(). Coordinate between generation, storage, rotation, and access control services. Implement transaction management, error handling, and performance optimization. Include caching for frequently accessed keys.
+
+## 6. Implement Key Performance Optimization and Caching [pending]
+### Dependencies: 4.5
+### Description: Add performance optimizations, caching mechanisms, and efficient key retrieval strategies for high-throughput operations
+### Details:
+Implement caching with Spring Cache abstraction, optimize database queries with proper indexing, add connection pooling, and implement lazy loading for key data. Create performance monitoring, metrics collection, and automatic cache invalidation policies. Include memory management and garbage collection optimization for key objects.
+
+## 7. Create Comprehensive Unit and Integration Tests [pending]
+### Dependencies: 4.5
+### Description: Implement thorough testing suite for all key management functionality including unit tests, integration tests, and security validation tests
+### Details:
+Create test classes for all services: KeyGenerationServiceTest, KeyStorageServiceTest, KeyRotationServiceTest, KeyAccessControlServiceTest, KeyManagementServiceTest. Include integration tests with @SpringBootTest, security tests, performance tests, and edge case validation. Add test key generation, mock security contexts, and database test fixtures.
+

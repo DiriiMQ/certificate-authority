@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: Implement Image Signature Verification System
+# Status: pending
+# Dependencies: 5, 6
+# Priority: high
+# Description: Create verification functionality for both embedded and detached signatures with comprehensive validation
+# Details:
+Implement ImageVerificationService that validates embedded signatures in PNG/JPEG metadata and detached .sig files. Extract signature data, verify against image content using SHA-256 hash, validate timestamp and key validity periods. Return verification result with signer key ID, algorithm, timestamp, and validity status (valid/invalid with reason).
+
+# Test Strategy:
+Test verification of signed images, tampered images, expired signatures, and invalid signatures. Verify both embedded and detached signature validation

@@ -1,0 +1,43 @@
+# Task ID: 1
+# Title: Setup Project Repository and Docker Configuration
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Initialize project structure with Docker Compose configuration for frontend, backend, and PostgreSQL database services
+# Details:
+Create root project directory with subdirectories for frontend (Vite+React+TS), backend (Spring Boot 3 Java 21), and database. Setup docker-compose.yml with three services: frontend (port 5173), backend (port 8080), and PostgreSQL (port 5432). Configure Docker volumes for key storage and database persistence. Create .gitignore and basic README files.
+
+# Test Strategy:
+Verify docker-compose up starts all three services successfully and ports are accessible
+
+# Subtasks:
+## 1. Create root project directory structure [done]
+### Dependencies: None
+### Description: Initialize the main project directory with organized subdirectories for frontend, backend, and database components
+### Details:
+Create root directory 'certificate_authority' with subdirectories: 'frontend/' for Vite+React+TS application, 'backend/' for Spring Boot 3 Java 21 service, 'database/' for SQL scripts and configurations, 'keys/' for cryptographic key storage, 'docs/' for documentation. Initialize git repository in root directory.
+
+## 2. Configure Docker Compose services definition [done]
+### Dependencies: 1.1
+### Description: Create docker-compose.yml with three main services: frontend, backend, and PostgreSQL database
+### Details:
+Create docker-compose.yml in root directory defining: frontend service (Node.js container, port 5173, volume mount to ./frontend), backend service (OpenJDK 21 container, port 8080, volume mount to ./backend), postgresql service (postgres:15 image, port 5432, environment variables for POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD). Configure service dependencies and health checks.
+
+## 3. Setup Docker volumes and persistent storage [done]
+### Dependencies: 1.2
+### Description: Configure Docker volumes for database persistence and cryptographic key storage
+### Details:
+Add volumes section to docker-compose.yml: postgres_data volume for database persistence, keys_volume for cryptographic key storage shared between services. Configure volume mounts for PostgreSQL data directory (/var/lib/postgresql/data) and keys directory accessible to backend service. Set appropriate permissions and ownership.
+
+## 4. Create environment configuration and networking [done]
+### Dependencies: 1.2, 1.3
+### Description: Configure Docker networking, environment variables, and service communication
+### Details:
+Create .env file for environment variables: database credentials, JWT secrets, API keys. Configure Docker networks for secure inter-service communication. Set up environment variable references in docker-compose.yml for database connection strings, service URLs, and security configurations. Configure port mappings and expose only necessary ports to host.
+
+## 5. Create project configuration files and documentation [done]
+### Dependencies: 1.1, 1.4
+### Description: Generate .gitignore, README.md, and initial project documentation
+### Details:
+Create comprehensive .gitignore for Node.js, Java, Docker, and IDE files. Generate README.md with project overview, setup instructions, Docker commands (docker-compose up/down), port information, and development workflow. Create basic documentation structure in docs/ directory. Add Docker startup verification script to ensure all services are healthy.
+

@@ -1,0 +1,61 @@
+# Task ID: 3
+# Title: Implement Backend Core Structure and Dependencies
+# Status: done
+# Dependencies: 21
+# Priority: high
+# Description: Setup Spring Boot 3 application with Java 21, focusing on Spring Data JPA and ORM configuration with Hibernate for proper entity management
+# Details:
+Initialize Spring Boot 3 project with Java 21. Configure Spring Data JPA with Hibernate ORM for PostgreSQL integration. Add dependencies: spring-boot-starter-web, spring-boot-starter-data-jpa, postgresql driver, hibernate-core, spring-boot-starter-security for basic auth, image processing libraries (ImageIO, metadata-extractor), cryptography libraries (Bouncy Castle). Configure application.yml with database connection settings, JPA/Hibernate properties (ddl-auto, show-sql, dialect). Create JPA entity base classes with proper annotations (@Entity, @Table, @Id, @GeneratedValue). Set up repository interfaces extending JpaRepository. Create basic application structure with controllers, services, repositories, and entities packages following Spring Boot conventions.
+
+# Test Strategy:
+Verify Spring Boot application starts successfully, database connection is established, JPA context loads properly, and health endpoint returns 200. Test basic entity persistence and retrieval operations.
+
+# Subtasks:
+## 1. Initialize Spring Boot 3 project with Java 21 [done]
+### Dependencies: None
+### Description: Create new Spring Boot 3 project structure with Java 21 configuration
+### Details:
+
+
+## 2. Configure Spring Data JPA and Hibernate dependencies [done]
+### Dependencies: None
+### Description: Add and configure spring-boot-starter-data-jpa, hibernate-core, and postgresql driver dependencies
+### Details:
+
+
+## 3. Setup database connection and JPA configuration [done]
+### Dependencies: None
+### Description: Configure application.yml with PostgreSQL connection settings and Hibernate properties (dialect, ddl-auto, show-sql)
+### Details:
+
+
+## 4. Create JPA entity base classes and annotations [done]
+### Dependencies: None
+### Description: Set up base entity classes with proper JPA annotations (@Entity, @Table, @Id, @GeneratedValue) and establish entity package structure
+### Details:
+
+
+## 5. Implement repository interfaces with JpaRepository [done]
+### Dependencies: None
+### Description: Create repository package and base repository interfaces extending JpaRepository for entity persistence operations
+### Details:
+
+
+## 6. Add remaining project dependencies [done]
+### Dependencies: None
+### Description: Include spring-boot-starter-web, spring-boot-starter-security, image processing libraries (ImageIO, metadata-extractor), and cryptography libraries (Bouncy Castle)
+### Details:
+
+
+## 7. Create basic application package structure [done]
+### Dependencies: None
+### Description: Set up controllers, services, repositories, and entities packages following Spring Boot conventions
+### Details:
+
+
+## 8. Test JPA configuration and entity persistence [done]
+### Dependencies: None
+### Description: Verify database connection, JPA context loading, and basic entity CRUD operations work correctly
+### Details:
+
+

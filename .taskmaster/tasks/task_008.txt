@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Implement REST API Endpoints with Spring Data JPA Integration
+# Status: pending
+# Dependencies: 13, 7
+# Priority: high
+# Description: Create Spring Boot REST controllers for signing, verification, key management, and audit log operations with proper JPA repository integration
+# Details:
+Implement REST controllers: POST /sign (accepts multipart image, returns signed image or .sig file), POST /verify (accepts image/sig file, returns verification result), POST /keys/rotate (rotates signing keys), GET /logs (audit log with JPA-based filtering and pagination). Use Spring Data repositories for data access abstraction. Add request/response DTOs, file upload handling up to 100MB, basic authentication, and comprehensive error handling. Configure multipart file handling and validation.
+
+# Test Strategy:
+Integration tests for all endpoints using MockMvc, test file uploads, authentication, and error scenarios. Verify proper JPA repository integration and pagination functionality.

@@ -1,0 +1,11 @@
+# Task ID: 9
+# Title: Implement Audit Logging and Authentication System
+# Status: pending
+# Dependencies: 8
+# Priority: medium
+# Description: Create comprehensive audit logging for all sign/verify operations with PostgreSQL persistence and simple username/password authentication
+# Details:
+Implement AuditLogService that captures all sign/verify operations using JPA entities to persist to PostgreSQL audit_log table. Log operation type, image hash (SHA-256), algorithm used, timestamp, user_id, and operation result. Create simple authentication system with username/password (sufficient for localhost). Add logging interceptors to capture operation details. Implement Spring Security for basic authentication. Create audit log query API with JPA-based filtering and pagination. Use UUID for primary keys.
+
+# Test Strategy:
+Verify audit entries are created for every operation, test query functionality and filtering, check database persistence. Test authentication functionality and protected endpoints.

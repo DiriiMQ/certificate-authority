@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: Implement Image Signature Embedding System
+# Status: pending
+# Dependencies: 4
+# Priority: high
+# Description: Create functionality to embed digital signatures into PNG and JPEG image metadata without corrupting image structure
+# Details:
+Implement ImageSigningService that embeds signatures in PNG iTXt chunks and JPEG COM/APP segments. Use SHA-256 for hashing image data, add UTC timestamp at signing time. Preserve original image quality without recompression. Create signature format that includes algorithm, timestamp, key ID, and signature bytes. Handle up to 100MB file sizes efficiently.
+
+# Test Strategy:
+Test with various PNG/JPEG files up to 100MB, verify image integrity and signature embedding, test with image viewers to ensure no corruption

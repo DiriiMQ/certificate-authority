@@ -1,0 +1,43 @@
+# Task ID: 12
+# Title: Initialize Spring Boot Backend with JPA Configuration
+# Status: done
+# Dependencies: 21
+# Priority: high
+# Description: Create Spring Boot 3 application with Java 21, Spring Data JPA, Hibernate, and PostgreSQL connectivity
+# Details:
+Initialize Spring Boot 3 project with Java 21. Configure Spring Data JPA with Hibernate for ORM. Set up PostgreSQL connection with application.yml/properties. Create base project structure with controllers, services, repositories, and entities packages. Configure transaction management and JPA settings. Add required dependencies: spring-boot-starter-data-jpa, postgresql-driver, spring-boot-starter-web.
+
+# Test Strategy:
+Verify Spring Boot application starts successfully and connects to PostgreSQL database. Test basic JPA configuration with a simple health check endpoint.
+
+# Subtasks:
+## 1. Initialize Spring Boot 3 Project Structure [done]
+### Dependencies: None
+### Description: Create new Spring Boot 3.x project with Java 21 using Spring Initializr or Maven archetype
+### Details:
+Generate Spring Boot 3 project with Java 21, Maven build system. Create main application class with @SpringBootApplication annotation. Set up basic project structure with src/main/java and src/main/resources directories. Configure Maven wrapper and basic pom.xml structure.
+
+## 2. Add Spring Data JPA and PostgreSQL Dependencies [done]
+### Dependencies: 12.1
+### Description: Configure Maven dependencies for Spring Data JPA, Hibernate, PostgreSQL driver, and web starter
+### Details:
+Add to pom.xml: spring-boot-starter-data-jpa (includes Hibernate), postgresql driver, spring-boot-starter-web, spring-boot-starter-test. Configure Spring Boot BOM for version management. Add any additional dependencies for validation and transaction management.
+
+## 3. Configure Database Connection Properties [done]
+### Dependencies: 12.2
+### Description: Set up PostgreSQL connection configuration in application.yml with JPA/Hibernate settings
+### Details:
+Create application.yml with PostgreSQL datasource configuration (URL, username, password, driver-class-name). Configure JPA properties: hibernate.ddl-auto, show-sql, format-sql, database-platform. Set up connection pooling with HikariCP. Configure transaction management settings.
+
+## 4. Create Base Package Structure [done]
+### Dependencies: 12.1
+### Description: Establish standard Spring Boot package hierarchy with controllers, services, repositories, and entities
+### Details:
+Create package structure under main package: controllers/, services/, repositories/, entities/, dto/, config/. Add placeholder classes or interfaces in each package to establish the structure. Follow Spring Boot naming conventions and package organization best practices.
+
+## 5. Configure JPA and Transaction Management [done]
+### Dependencies: 12.3, 12.4
+### Description: Set up JPA configuration, entity scanning, and declarative transaction management
+### Details:
+Configure @EnableJpaRepositories annotation on main application class or configuration class. Set up @EnableTransactionManagement for declarative transactions. Configure JPA entity scanning base packages. Add any custom JPA configuration beans for advanced settings like naming strategies or custom repository implementations.
+

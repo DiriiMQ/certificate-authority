@@ -1,0 +1,43 @@
+# Task ID: 21
+# Title: Implement ORM-Based Database Schema with JPA Entities and Flyway Migrations
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Replace manual SQL approach with modern Spring Boot ORM using JPA entities, Spring Data JPA auditing, and Flyway migrations for production-ready database schema management.
+# Details:
+Create JPA entity for AuditLog with @Entity, @Table annotations, UUID primary key (@Id @GeneratedValue(generator = "UUID")), and proper field mappings (@Column, @Enumerated for operation/result enums). Implement Spring Data JPA auditing with @CreatedDate, @LastModifiedDate, @CreatedBy, @LastModifiedBy annotations and @EnableJpaAuditing configuration. Configure Flyway migrations in src/main/resources/db/migration with V1__Initial_Schema.sql to replace existing manual SQL. Set up entity-first to migration-first workflow by generating migrations from JPA entities using Flyway Maven plugin. Configure spring.jpa.hibernate.ddl-auto=validate to ensure schema consistency. Integrate PostgreSQL-specific Flyway configurations with proper datasource settings and migration validation. Create AuditLogRepository extending JpaRepository with custom query methods for filtering operations.
+
+# Test Strategy:
+Verify JPA entities map correctly to database tables through integration tests. Test Spring Data JPA auditing fields are automatically populated on entity creation/updates. Validate Flyway migrations execute successfully and create expected schema structure. Test repository CRUD operations and custom query methods. Verify spring.jpa.hibernate.ddl-auto=validate mode prevents schema drift by testing with mismatched entity definitions.
+
+# Subtasks:
+## 1. Create JPA AuditLog Entity with Proper Annotations [done]
+### Dependencies: None
+### Description: Create the core JPA entity class for AuditLog with all required annotations, field mappings, and UUID primary key configuration
+### Details:
+Create AuditLog.java entity class with @Entity and @Table annotations. Add UUID primary key with @Id and @GeneratedValue(generator = "UUID") annotations. Define all fields with proper @Column mappings including operation and result enums with @Enumerated annotation. Include proper constructors, getters, setters, and toString methods. Configure UUID generator strategy for PostgreSQL compatibility.
+
+## 2. Configure Spring Data JPA Auditing [done]
+### Dependencies: 21.1
+### Description: Implement automatic auditing functionality with @CreatedDate, @LastModifiedDate, @CreatedBy, and @LastModifiedBy fields
+### Details:
+Add auditing fields to AuditLog entity with @CreatedDate, @LastModifiedDate, @CreatedBy, and @LastModifiedBy annotations. Create @EnableJpaAuditing configuration class with AuditorAware implementation for capturing current user context. Configure automatic timestamp population on entity creation and updates. Ensure proper data types (LocalDateTime for timestamps, String for user fields).
+
+## 3. Set Up Flyway Migration Configuration [done]
+### Dependencies: None
+### Description: Configure Flyway for database migration management with PostgreSQL-specific settings and create initial schema migration
+### Details:
+Add Flyway dependency to pom.xml and configure application.properties with Flyway settings including migration locations (classpath:db/migration), validation enabled, and PostgreSQL-specific configurations. Create src/main/resources/db/migration directory structure. Configure spring.jpa.hibernate.ddl-auto=validate to ensure schema consistency. Set up Flyway Maven plugin for migration management.
+
+## 4. Create Initial Database Migration Script [done]
+### Dependencies: 21.1, 21.3
+### Description: Create V1__Initial_Schema.sql migration file that defines the complete database schema based on JPA entities
+### Details:
+Create V1__Initial_Schema.sql in src/main/resources/db/migration with PostgreSQL-specific DDL statements. Include CREATE TABLE statement for audit_log with UUID primary key, proper column definitions matching JPA entity fields, enum types for operation and result fields, timestamp columns with timezone support, and appropriate indexes for query performance. Ensure migration is idempotent and includes proper constraints.
+
+## 5. Create AuditLogRepository with Custom Query Methods [done]
+### Dependencies: 21.2
+### Description: Implement Spring Data JPA repository interface with custom query methods for filtering and retrieving audit log entries
+### Details:
+Create AuditLogRepository interface extending JpaRepository<AuditLog, UUID>. Add custom query methods using @Query annotations or method name conventions for filtering by operation type, result status, date ranges, and user. Implement pagination support with Pageable parameters. Add methods for finding recent entries, filtering by specific criteria, and counting operations by type.
+

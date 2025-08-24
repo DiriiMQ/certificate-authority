@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: Setup Docker Compose Infrastructure
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Create Docker Compose configuration with frontend (Vite), backend (Spring Boot), and PostgreSQL database services
+# Details:
+Create docker-compose.yml with three services: frontend (Vite on port 5173), backend (Spring Boot on port 8080), and PostgreSQL database (port 5432). Configure environment variables, networking, and volume mounts for keys. Include Dockerfiles for frontend and backend services. Set up proper service dependencies and health checks.
+
+# Test Strategy:
+Verify all three services start successfully with docker-compose up. Test connectivity between services and confirm ports are accessible on localhost.

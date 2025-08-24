@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Implement Detached Signature Generation
+# Status: pending
+# Dependencies: 4
+# Priority: medium
+# Description: Create functionality to generate detached .sig files containing image signatures
+# Details:
+Implement DetachedSignatureService that generates .sig files containing: original filename, image hash (SHA-256), algorithm used, timestamp (UTC), key ID, and signature bytes. Use structured format (JSON or custom binary) for .sig file content. Ensure .sig files can be associated with their corresponding images.
+
+# Test Strategy:
+Generate .sig files for test images, verify content structure and signature validation against original images

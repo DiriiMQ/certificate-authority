@@ -1,16 +1,16 @@
 -- V4__Add_audit_columns_to_audit_log.sql
 -- Add Spring Data JPA auditing columns to audit_log table
 
--- Add the missing auditing columns to audit_log table
+-- Add the missing auditing columns to audit_log table (only if they don't exist)
 ALTER TABLE audit_log 
-    ADD COLUMN created_by VARCHAR(100),
-    ADD COLUMN updated_by VARCHAR(100),
-    ADD COLUMN last_modified_date TIMESTAMP WITH TIME ZONE;
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS updated_by VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS last_modified_date TIMESTAMP WITH TIME ZONE;
 
--- Create indexes for the new auditing columns
-CREATE INDEX idx_audit_log_created_by ON audit_log (created_by);
-CREATE INDEX idx_audit_log_updated_by ON audit_log (updated_by);
-CREATE INDEX idx_audit_log_last_modified_date ON audit_log (last_modified_date DESC);
+-- Create indexes for the new auditing columns (only if they don't exist)
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_by ON audit_log (created_by);
+CREATE INDEX IF NOT EXISTS idx_audit_log_updated_by ON audit_log (updated_by);
+CREATE INDEX IF NOT EXISTS idx_audit_log_last_modified_date ON audit_log (last_modified_date DESC);
 
 -- Add comments for documentation
 COMMENT ON COLUMN audit_log.created_by IS 'User who created this audit log entry';

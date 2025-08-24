@@ -1,0 +1,43 @@
+# Task ID: 13
+# Title: Create Database Schema with JPA Entities
+# Status: done
+# Dependencies: 12
+# Priority: high
+# Description: Design and implement JPA entities for audit_log, signing_keys, and key_rotation_log tables with proper ORM mappings
+# Details:
+Create JPA entities: AuditLog (@Id UUID, @Enumerated operation, image_hash, algorithm, @CreationTimestamp, user_id, @Enumerated result), SigningKeys (key management with lifecycle tracking), KeyRotationLog (audit trail). Use proper JPA annotations, constraints, and relationships. Set up Flyway or Liquibase for database migrations alongside JPA. Configure UUID generation strategies and enum mappings.
+
+# Test Strategy:
+Verify database tables are created correctly through JPA entity mapping. Test CRUD operations on each entity through repository interfaces.
+
+# Subtasks:
+## 1. Set up JPA configuration and database connection [done]
+### Dependencies: None
+### Description: Configure Spring Data JPA, database connection properties, and entity scanning in the Spring Boot application
+### Details:
+Add JPA and PostgreSQL dependencies to pom.xml. Configure application.yml with database connection properties (URL, username, password). Set up JPA configuration including dialect, ddl-auto, and show-sql properties. Configure entity package scanning and repository base packages.
+
+## 2. Create enum classes for JPA entities [done]
+### Dependencies: None
+### Description: Define enum classes for operation types, algorithms, and result statuses used across entities
+### Details:
+Create OperationType enum (SIGN, VERIFY), AlgorithmType enum (ED25519, ECDSA_P256, RSA_3072), and ResultStatus enum (SUCCESS, FAILURE). Implement proper string representations and validation methods for database storage.
+
+## 3. Implement AuditLog JPA entity [done]
+### Dependencies: 13.2
+### Description: Create AuditLog entity with proper JPA annotations and UUID generation strategy
+### Details:
+Create AuditLog entity with @Entity annotation. Define fields: id (UUID with @GeneratedValue), operation (@Enumerated), imageHash (String), algorithm (@Enumerated), timestamp (@CreationTimestamp), userId (String), result (@Enumerated). Configure UUID generation strategy and proper column mappings.
+
+## 4. Implement SigningKeys and KeyRotationLog JPA entities [done]
+### Dependencies: 13.2
+### Description: Create SigningKeys entity for key management and KeyRotationLog for audit trail with proper relationships
+### Details:
+Create SigningKeys entity with key lifecycle tracking (id, keyData, algorithm, createdAt, expiresAt, isActive). Create KeyRotationLog entity for audit trail (id, oldKeyId, newKeyId, rotationTimestamp, reason). Establish proper JPA relationships between entities and configure cascade operations.
+
+## 5. Set up Flyway database migrations [done]
+### Dependencies: 13.3, 13.4
+### Description: Configure Flyway for database schema versioning and create initial migration scripts for all entities
+### Details:
+Add Flyway dependency and configure migration settings. Create V1__Create_audit_log_table.sql, V2__Create_signing_keys_table.sql, and V3__Create_key_rotation_log_table.sql migration files. Ensure migrations match JPA entity definitions and include proper indexes and constraints.
+
