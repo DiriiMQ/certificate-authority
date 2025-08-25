@@ -9,3 +9,29 @@ Implement ImageVerificationService that validates embedded signatures in PNG/JPE
 
 # Test Strategy:
 Test verification of signed images, tampered images, expired signatures, and invalid signatures. Verify both embedded and detached signature validation
+
+# Subtasks:
+## 1. Support Verification with Expired/Rotated Keys [pending]
+### Dependencies: None
+### Description: Implement verification capability for signatures created with keys that are now expired or rotated
+### Details:
+Add KeyStorageService.retrieveKeyByIdentifierForVerification() method that bypasses isUsable() check to allow verification of signatures made with expired keys. This ensures long-term signature validity even after key rotation.
+
+## 2. Implement Signature Extraction from Images [pending]
+### Dependencies: None
+### Description: Extract signature data from PNG iTXt chunks and JPEG COM/APP segments
+### Details:
+Parse embedded signature metadata from image files to extract key identifier, algorithm, timestamp, and signature bytes for verification processing.
+
+## 3. Implement Core Cryptographic Verification [pending]
+### Dependencies: 7.1, 7.2
+### Description: Perform actual signature verification using retrieved key and image hash
+### Details:
+Use SHA-256 to hash image content, retrieve appropriate signing key (including expired keys for verification), and perform cryptographic signature validation using the original algorithm.
+
+## 4. Handle Detached Signature Verification [pending]
+### Dependencies: 7.1
+### Description: Implement verification for .sig detached signature files
+### Details:
+Parse .sig files, validate signature against corresponding image content, and ensure proper association between .sig files and their images.
+

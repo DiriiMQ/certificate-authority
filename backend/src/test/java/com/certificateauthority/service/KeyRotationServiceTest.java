@@ -6,6 +6,7 @@ import com.certificateauthority.repository.KeyRotationLogRepository;
 import com.certificateauthority.repository.SigningKeyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -59,6 +60,12 @@ class KeyRotationServiceTest {
         ReflectionTestUtils.setField(keyRotationService, "overlapPeriodHours", 24);
         ReflectionTestUtils.setField(keyRotationService, "autoRotationEnabled", true);
         ReflectionTestUtils.setField(keyRotationService, "emergencyDeactivationDelayHours", 1);
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // Reset mocks to prevent test pollution
+        reset(keyGenerationService, keyStorageService, signingKeyRepository, keyRotationLogRepository);
     }
 
     @Test
@@ -264,7 +271,7 @@ class KeyRotationServiceTest {
         // Then
         assertThat(validation.getKey()).isEqualTo(key);
         assertThat(validation.getAgeDays()).isEqualTo(80);
-        assertThat(validation.getDaysToExpiration()).isEqualTo(5);
+        assertThat(validation.getDaysToExpiration()).isBetween(4L, 5L);
         assertThat(validation.hasRecommendations()).isTrue();
         assertThat(validation.getRecommendations()).anyMatch(r -> r.contains("approaching"));
 

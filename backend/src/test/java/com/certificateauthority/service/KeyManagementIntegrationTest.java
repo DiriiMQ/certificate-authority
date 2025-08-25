@@ -6,12 +6,24 @@ import com.certificateauthority.repository.AuditLogRepository;
 import com.certificateauthority.repository.KeyRotationLogRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Map;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,10 +34,19 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @TestPropertySource(properties = {
     "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "spring.datasource.username=sa",
+    "spring.datasource.password=",
     "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.flyway.enabled=false"
+    "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+    "spring.flyway.enabled=false",
+    "spring.security.enabled=true",
+    "app.key-storage.master-password=test-master-password-change-in-production",
+    "app.key-rotation.default-key-lifetime-days=90",
+    "app.key-rotation.usage-threshold=10000"
 })
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class KeyManagementIntegrationTest {
 
     @Autowired
@@ -58,6 +79,25 @@ public class KeyManagementIntegrationTest {
         auditLogRepository.deleteAll();
         keyRotationLogRepository.deleteAll();
         signingKeyRepository.deleteAll();
+        
+        // Set up authentication context with KEY_ADMIN and KEY_OPERATOR roles
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+            "test_user", 
+            "password", 
+            List.of(
+                new SimpleGrantedAuthority("ROLE_KEY_ADMIN"),
+                new SimpleGrantedAuthority("ROLE_KEY_OPERATOR")
+            )
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // Clean up all data after each test to prevent pollution
+        auditLogRepository.deleteAll();
+        keyRotationLogRepository.deleteAll();
+        signingKeyRepository.deleteAll();
     }
 
     @Test
@@ -75,6 +115,13 @@ public class KeyManagementIntegrationTest {
         KeyManagementService.KeyManagementResult retrieveResult = keyManagementService.getSigningKey("Ed25519");
         
         assertNotNull(retrieveResult, "Key retrieval result should not be null");
+        
+        // Debug information if retrieval fails
+        if (!retrieveResult.isSuccess()) {
+            System.out.println("Key retrieval failed. Message: " + retrieveResult.getMessage());
+            System.out.println("Metadata: " + retrieveResult.getMetadata());
+        }
+        
         assertTrue(retrieveResult.isSuccess(), "Key retrieval should succeed");
         assertNotNull(retrieveResult.getSigningKey(), "Retrieved key should not be null");
         assertEquals(result.getSigningKey().getId(), retrieveResult.getSigningKey().getId(), "Retrieved key should match generated key");
@@ -119,6 +166,13 @@ public class KeyManagementIntegrationTest {
         
         // Test ECDSA P-256
         var ecdsaResult = keyManagementService.generateNewKey("ECDSA_P256", "test_user", "ECDSA test");
+        
+        // Debug information if ECDSA generation fails
+        if (!ecdsaResult.isSuccess()) {
+            System.out.println("ECDSA key generation failed. Message: " + ecdsaResult.getMessage());
+            System.out.println("Metadata: " + ecdsaResult.getMetadata());
+        }
+        
         assertTrue(ecdsaResult.isSuccess(), "ECDSA P-256 key generation should succeed");
         
         // Test RSA-3072

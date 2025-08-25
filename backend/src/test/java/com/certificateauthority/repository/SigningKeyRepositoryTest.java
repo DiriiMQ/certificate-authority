@@ -8,6 +8,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SigningKeyRepositoryTest {
 
     @Autowired
@@ -41,6 +50,8 @@ class SigningKeyRepositoryTest {
                 "test_user"
         );
         signingKey.setExpiresAt(LocalDateTime.now().plusDays(90));
+        signingKey.setCreatedAt(LocalDateTime.now());
+        signingKey.setUpdatedAt(LocalDateTime.now());
 
         // When
         SigningKey saved = signingKeyRepository.save(signingKey);
@@ -67,6 +78,8 @@ class SigningKeyRepositoryTest {
     void testFindByKeyIdentifier() {
         // Given
         SigningKey signingKey = new SigningKey("unique-key-001", "Ed25519", "pub", "priv", 256, "user1");
+        signingKey.setCreatedAt(LocalDateTime.now());
+        signingKey.setUpdatedAt(LocalDateTime.now());
         signingKeyRepository.save(signingKey);
         entityManager.flush();
 
@@ -82,7 +95,12 @@ class SigningKeyRepositoryTest {
     void testFindByIsActiveTrue() {
         // Given
         SigningKey activeKey = new SigningKey("active-key", "Ed25519", "pub1", "priv1", 256, "user1");
+        activeKey.setCreatedAt(LocalDateTime.now());
+        activeKey.setUpdatedAt(LocalDateTime.now());
+        
         SigningKey inactiveKey = new SigningKey("inactive-key", "Ed25519", "pub2", "priv2", 256, "user1");
+        inactiveKey.setCreatedAt(LocalDateTime.now());
+        inactiveKey.setUpdatedAt(LocalDateTime.now());
         inactiveKey.deactivate("user1", "Test deactivation");
         
         signingKeyRepository.save(activeKey);
@@ -102,7 +120,12 @@ class SigningKeyRepositoryTest {
     void testFindByAlgorithm() {
         // Given
         SigningKey ed25519Key = new SigningKey("ed25519-key", "Ed25519", "pub1", "priv1", 256, "user1");
+        ed25519Key.setCreatedAt(LocalDateTime.now());
+        ed25519Key.setUpdatedAt(LocalDateTime.now());
+        
         SigningKey rsaKey = new SigningKey("rsa-key", "RSA-3072", "pub2", "priv2", 3072, "user1");
+        rsaKey.setCreatedAt(LocalDateTime.now());
+        rsaKey.setUpdatedAt(LocalDateTime.now());
         
         signingKeyRepository.save(ed25519Key);
         signingKeyRepository.save(rsaKey);
@@ -125,11 +148,15 @@ class SigningKeyRepositoryTest {
         // Given
         SigningKey oldKey = new SigningKey("old-key", "Ed25519", "pub1", "priv1", 256, "user1");
         oldKey.setCreatedAt(LocalDateTime.now().minusDays(10));
+        oldKey.setUpdatedAt(LocalDateTime.now().minusDays(10));
         
         SigningKey newKey = new SigningKey("new-key", "Ed25519", "pub2", "priv2", 256, "user1");
         newKey.setCreatedAt(LocalDateTime.now().minusDays(1));
+        newKey.setUpdatedAt(LocalDateTime.now().minusDays(1));
         
         SigningKey inactiveKey = new SigningKey("inactive-key", "Ed25519", "pub3", "priv3", 256, "user1");
+        inactiveKey.setCreatedAt(LocalDateTime.now());
+        inactiveKey.setUpdatedAt(LocalDateTime.now());
         inactiveKey.deactivate("user1", "Test");
         
         signingKeyRepository.save(oldKey);
@@ -152,14 +179,22 @@ class SigningKeyRepositoryTest {
         LocalDateTime now = LocalDateTime.now();
         
         SigningKey activeKey = new SigningKey("active-key", "Ed25519", "pub1", "priv1", 256, "user1");
+        activeKey.setCreatedAt(now);
+        activeKey.setUpdatedAt(now);
         
         SigningKey expiredKey = new SigningKey("expired-key", "Ed25519", "pub2", "priv2", 256, "user1");
         expiredKey.setExpiresAt(now.minusDays(1));
+        expiredKey.setCreatedAt(now);
+        expiredKey.setUpdatedAt(now);
         
         SigningKey futureExpiredKey = new SigningKey("future-expired-key", "Ed25519", "pub3", "priv3", 256, "user1");
         futureExpiredKey.setExpiresAt(now.plusDays(30));
+        futureExpiredKey.setCreatedAt(now);
+        futureExpiredKey.setUpdatedAt(now);
         
         SigningKey inactiveKey = new SigningKey("inactive-key", "Ed25519", "pub4", "priv4", 256, "user1");
+        inactiveKey.setCreatedAt(now);
+        inactiveKey.setUpdatedAt(now);
         inactiveKey.deactivate("user1", "Test");
         
         signingKeyRepository.save(activeKey);
@@ -180,14 +215,26 @@ class SigningKeyRepositoryTest {
     @Test
     void testCountByAlgorithmAndIsActiveTrue() {
         // Given
-        signingKeyRepository.save(new SigningKey("key1", "Ed25519", "pub1", "priv1", 256, "user1"));
-        signingKeyRepository.save(new SigningKey("key2", "Ed25519", "pub2", "priv2", 256, "user1"));
+        SigningKey key1 = new SigningKey("key1", "Ed25519", "pub1", "priv1", 256, "user1");
+        key1.setCreatedAt(LocalDateTime.now());
+        key1.setUpdatedAt(LocalDateTime.now());
+        signingKeyRepository.save(key1);
+        
+        SigningKey key2 = new SigningKey("key2", "Ed25519", "pub2", "priv2", 256, "user1");
+        key2.setCreatedAt(LocalDateTime.now());
+        key2.setUpdatedAt(LocalDateTime.now());
+        signingKeyRepository.save(key2);
         
         SigningKey inactiveKey = new SigningKey("key3", "Ed25519", "pub3", "priv3", 256, "user1");
+        inactiveKey.setCreatedAt(LocalDateTime.now());
+        inactiveKey.setUpdatedAt(LocalDateTime.now());
         inactiveKey.deactivate("user1", "Test");
         signingKeyRepository.save(inactiveKey);
         
-        signingKeyRepository.save(new SigningKey("key4", "RSA-3072", "pub4", "priv4", 3072, "user1"));
+        SigningKey key4 = new SigningKey("key4", "RSA-3072", "pub4", "priv4", 3072, "user1");
+        key4.setCreatedAt(LocalDateTime.now());
+        key4.setUpdatedAt(LocalDateTime.now());
+        signingKeyRepository.save(key4);
         entityManager.flush();
 
         // When
@@ -203,6 +250,8 @@ class SigningKeyRepositoryTest {
     void testKeyLifecycleMethods() {
         // Given
         SigningKey signingKey = new SigningKey("lifecycle-key", "Ed25519", "pub", "priv", 256, "user1");
+        signingKey.setCreatedAt(LocalDateTime.now());
+        signingKey.setUpdatedAt(LocalDateTime.now());
         signingKey = signingKeyRepository.save(signingKey);
         entityManager.flush();
 
@@ -236,11 +285,17 @@ class SigningKeyRepositoryTest {
         
         SigningKey expiredKey = new SigningKey("expired-key", "Ed25519", "pub1", "priv1", 256, "user1");
         expiredKey.setExpiresAt(now.minusDays(1));
+        expiredKey.setCreatedAt(now);
+        expiredKey.setUpdatedAt(now);
         
         SigningKey validKey = new SigningKey("valid-key", "Ed25519", "pub2", "priv2", 256, "user1");
         validKey.setExpiresAt(now.plusDays(30));
+        validKey.setCreatedAt(now);
+        validKey.setUpdatedAt(now);
         
         SigningKey neverExpiresKey = new SigningKey("never-expires-key", "Ed25519", "pub3", "priv3", 256, "user1");
+        neverExpiresKey.setCreatedAt(now);
+        neverExpiresKey.setUpdatedAt(now);
         // expiresAt is null by default
         
         // When/Then
@@ -255,18 +310,41 @@ class SigningKeyRepositoryTest {
     }
 
     @Test
+    @Order(1)
+    @Transactional
+    @Rollback
     void testFindKeysNeedingRotationByAge() {
         // Given
         LocalDateTime oldThreshold = LocalDateTime.now().minusDays(90);
         
-        SigningKey oldKey = new SigningKey("old-key", "Ed25519", "pub1", "priv1", 256, "user1");
-        oldKey.setCreatedAt(LocalDateTime.now().minusDays(100));
+        // Create keys with specific dates using direct SQL to bypass JPA auditing
+        LocalDateTime oldDate = LocalDateTime.now().minusDays(100);
+        LocalDateTime newDate = LocalDateTime.now().minusDays(30);
         
-        SigningKey newKey = new SigningKey("new-key", "Ed25519", "pub2", "priv2", 256, "user1");
-        newKey.setCreatedAt(LocalDateTime.now().minusDays(30));
-        
-        signingKeyRepository.save(oldKey);
-        signingKeyRepository.save(newKey);
+        // Insert old key directly via SQL
+        entityManager.getEntityManager().createNativeQuery("""
+            INSERT INTO public.signing_keys 
+            (id, key_identifier, algorithm, public_key_data, private_key_data, key_size_bits, 
+             is_active, created_at, updated_at, usage_count, version)
+            VALUES (random_uuid(), 'old-key', 'Ed25519', 'pub1', 'priv1', 256, 
+                    true, ?1, ?2, 0, 0)
+            """)
+            .setParameter(1, oldDate)
+            .setParameter(2, oldDate)
+            .executeUpdate();
+            
+        // Insert new key directly via SQL
+        entityManager.getEntityManager().createNativeQuery("""
+            INSERT INTO public.signing_keys 
+            (id, key_identifier, algorithm, public_key_data, private_key_data, key_size_bits, 
+             is_active, created_at, updated_at, usage_count, version)
+            VALUES (random_uuid(), 'new-key', 'Ed25519', 'pub2', 'priv2', 256, 
+                    true, ?1, ?2, 0, 0)
+            """)
+            .setParameter(1, newDate)
+            .setParameter(2, newDate)
+            .executeUpdate();
+            
         entityManager.flush();
 
         // When
@@ -283,9 +361,13 @@ class SigningKeyRepositoryTest {
         // Given
         SigningKey highUsageKey = new SigningKey("high-usage-key", "Ed25519", "pub1", "priv1", 256, "user1");
         highUsageKey.setUsageCount(15000L);
+        highUsageKey.setCreatedAt(LocalDateTime.now());
+        highUsageKey.setUpdatedAt(LocalDateTime.now());
         
         SigningKey lowUsageKey = new SigningKey("low-usage-key", "Ed25519", "pub2", "priv2", 256, "user1");
         lowUsageKey.setUsageCount(500L);
+        lowUsageKey.setCreatedAt(LocalDateTime.now());
+        lowUsageKey.setUpdatedAt(LocalDateTime.now());
         
         signingKeyRepository.save(highUsageKey);
         signingKeyRepository.save(lowUsageKey);

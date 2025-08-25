@@ -4,6 +4,7 @@ import com.certificateauthority.entity.SigningKey;
 import com.certificateauthority.repository.SigningKeyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,6 +43,12 @@ class KeyStorageServiceTest {
     void setUp() throws Exception {
         keyStorageService = new KeyStorageService(signingKeyRepository, "test-master-password");
         keyGenerationService = new KeyGenerationService();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // Reset mocks to prevent test pollution
+        reset(signingKeyRepository);
     }
 
     @Test
@@ -174,8 +181,10 @@ class KeyStorageServiceTest {
             keyStorageService.retrieveKeyByIdentifier("test-key");
 
         // Then
-        assertThat(result).isEmpty(); // Because mock key is not usable by default
+        assertThat(result).isPresent(); // Mock key is usable by default (active=true, no expiration)
+        assertThat(result.get().getDecryptedPrivateKey()).isEqualTo("privateKeyData");
         verify(signingKeyRepository).findByKeyIdentifier("test-key");
+        verify(signingKeyRepository).save(mockKey); // Verify usage was updated
     }
 
     @Test
@@ -391,18 +400,31 @@ class KeyStorageServiceTest {
     // Helper methods
 
     private SigningKey createMockSigningKey() {
-        SigningKey key = new SigningKey(
-            "test-key-001",
-            "Ed25519",
-            "cHVibGljS2V5RGF0YQ==", // Base64 encoded "publicKeyData"
-            "cHJpdmF0ZUtleURhdGE=", // Base64 encoded "privateKeyData"
-            255,
-            "test_user"
-        );
-        key.setId(UUID.randomUUID());
-        key.setCreatedAt(LocalDateTime.now());
-        key.setUpdatedAt(LocalDateTime.now());
-        return key;
+        try {
+            // Use the actual encryption method to create properly encrypted private key data
+            String plainPrivateKey = "privateKeyData";
+            KeyStorageService tempService = new KeyStorageService(signingKeyRepository, "test-master-password");
+            
+            // Use reflection to access the private encryptPrivateKey method
+            java.lang.reflect.Method encryptMethod = KeyStorageService.class.getDeclaredMethod("encryptPrivateKey", String.class);
+            encryptMethod.setAccessible(true);
+            String encryptedPrivateKey = (String) encryptMethod.invoke(tempService, plainPrivateKey);
+            
+            SigningKey key = new SigningKey(
+                "test-key-001",
+                "Ed25519",
+                "cHVibGljS2V5RGF0YQ==", // Base64 encoded "publicKeyData"
+                encryptedPrivateKey, // Properly encrypted private key
+                255,
+                "test_user"
+            );
+            key.setId(UUID.randomUUID());
+            key.setCreatedAt(LocalDateTime.now());
+            key.setUpdatedAt(LocalDateTime.now());
+            return key;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create mock signing key", e);
+        }
     }
 
     private SigningKey createUsableMockSigningKey() {

@@ -2,6 +2,7 @@ package com.certificateauthority.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,6 +24,12 @@ class KeyGenerationServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         keyGenerationService = new KeyGenerationService();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // Clean up any resources (KeyGenerationService doesn't use database)
+        keyGenerationService = null;
     }
 
     @Test

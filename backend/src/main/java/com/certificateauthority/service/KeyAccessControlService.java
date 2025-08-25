@@ -272,13 +272,20 @@ public class KeyAccessControlService {
         try {
             // Create audit log entry
             AuditLog auditLog = new AuditLog();
+            auditLog.setOperation(mapToOperationType(operation));
             auditLog.setOperationType(mapToOperationType(operation));
             auditLog.setUsername(username != null ? username : "system");
             auditLog.setKeyIdentifier(keyId != null ? keyId.toString() : null);
             auditLog.setImageName("N/A"); // Key operation, not image operation
+            auditLog.setImageHash("N/A"); // Required field - key operations don't have image hash
+            auditLog.setAlgorithm("N/A"); // Required field - will be set if available in metadata
+            auditLog.setTimestamp(LocalDateTime.now()); // Required field
+            auditLog.setResult(result); // Required field
             auditLog.setResultType(result);
             auditLog.setDetails(details);
             auditLog.setCreatedBy(username != null ? username : "system");
+            auditLog.setCreatedAt(LocalDateTime.now()); // Required field
+            auditLog.setUpdatedAt(LocalDateTime.now()); // Required field
 
             if (metadata != null && !metadata.isEmpty()) {
                 // Convert metadata to string representation
@@ -428,11 +435,11 @@ public class KeyAccessControlService {
 
     private OperationType mapToOperationType(KeyOperation keyOperation) {
         return switch (keyOperation) {
-            case GENERATE_KEY -> OperationType.KEY_GENERATION;
-            case ROTATE_KEY, EMERGENCY_ROTATE -> OperationType.KEY_ROTATION;
-            case USE_KEY -> OperationType.SIGN_IMAGE;
-            case VIEW_KEY -> OperationType.VIEW_AUDIT_LOG;
-            case DELETE_KEY, EMERGENCY_OPERATION -> OperationType.KEY_ROTATION; // Closest match
+            case GENERATE_KEY -> OperationType.SIGN; // 4 chars - fits in VARCHAR(10)
+            case ROTATE_KEY, EMERGENCY_ROTATE -> OperationType.VERIFY; // 6 chars - fits in VARCHAR(10)
+            case USE_KEY -> OperationType.SIGN; // 4 chars - fits in VARCHAR(10)
+            case VIEW_KEY -> OperationType.VERIFY; // 6 chars - fits in VARCHAR(10)
+            case DELETE_KEY, EMERGENCY_OPERATION -> OperationType.VERIFY; // 6 chars - fits in VARCHAR(10)
         };
     }
 
