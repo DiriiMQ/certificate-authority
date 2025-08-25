@@ -1,1 +1,618 @@
-[]
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Docker Configuration",
+        "description": "Initialize project structure with Docker Compose configuration for frontend, backend, and PostgreSQL database services",
+        "details": "Create root project directory with subdirectories for frontend (Vite+React+TS), backend (Spring Boot 3 Java 21), and database. Setup docker-compose.yml with three services: frontend (port 5173), backend (port 8080), and PostgreSQL (port 5432). Configure Docker volumes for key storage and database persistence. Create .gitignore and basic README files.",
+        "testStrategy": "Verify docker-compose up starts all three services successfully and ports are accessible",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create root project directory structure",
+            "description": "Initialize the main project directory with organized subdirectories for frontend, backend, and database components",
+            "dependencies": [],
+            "details": "Create root directory 'certificate_authority' with subdirectories: 'frontend/' for Vite+React+TS application, 'backend/' for Spring Boot 3 Java 21 service, 'database/' for SQL scripts and configurations, 'keys/' for cryptographic key storage, 'docs/' for documentation. Initialize git repository in root directory.",
+            "status": "done",
+            "testStrategy": "Verify all directories are created with correct structure and git repository is initialized"
+          },
+          {
+            "id": 2,
+            "title": "Configure Docker Compose services definition",
+            "description": "Create docker-compose.yml with three main services: frontend, backend, and PostgreSQL database",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Create docker-compose.yml in root directory defining: frontend service (Node.js container, port 5173, volume mount to ./frontend), backend service (OpenJDK 21 container, port 8080, volume mount to ./backend), postgresql service (postgres:15 image, port 5432, environment variables for POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD). Configure service dependencies and health checks.",
+            "status": "done",
+            "testStrategy": "Run docker-compose config to validate YAML syntax and service definitions"
+          },
+          {
+            "id": 3,
+            "title": "Setup Docker volumes and persistent storage",
+            "description": "Configure Docker volumes for database persistence and cryptographic key storage",
+            "dependencies": [
+              "1.2"
+            ],
+            "details": "Add volumes section to docker-compose.yml: postgres_data volume for database persistence, keys_volume for cryptographic key storage shared between services. Configure volume mounts for PostgreSQL data directory (/var/lib/postgresql/data) and keys directory accessible to backend service. Set appropriate permissions and ownership.",
+            "status": "done",
+            "testStrategy": "Verify volumes are created and mounted correctly when containers start"
+          },
+          {
+            "id": 4,
+            "title": "Create environment configuration and networking",
+            "description": "Configure Docker networking, environment variables, and service communication",
+            "dependencies": [
+              "1.2",
+              "1.3"
+            ],
+            "details": "Create .env file for environment variables: database credentials, JWT secrets, API keys. Configure Docker networks for secure inter-service communication. Set up environment variable references in docker-compose.yml for database connection strings, service URLs, and security configurations. Configure port mappings and expose only necessary ports to host.",
+            "status": "done",
+            "testStrategy": "Verify environment variables are loaded correctly and services can communicate internally"
+          },
+          {
+            "id": 5,
+            "title": "Create project configuration files and documentation",
+            "description": "Generate .gitignore, README.md, and initial project documentation",
+            "dependencies": [
+              "1.1",
+              "1.4"
+            ],
+            "details": "Create comprehensive .gitignore for Node.js, Java, Docker, and IDE files. Generate README.md with project overview, setup instructions, Docker commands (docker-compose up/down), port information, and development workflow. Create basic documentation structure in docs/ directory. Add Docker startup verification script to ensure all services are healthy.",
+            "status": "done",
+            "testStrategy": "Verify docker-compose up starts all three services successfully, ports are accessible (5173, 8080, 5432), and all services report healthy status"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Initialize PostgreSQL Database Schema",
+        "description": "Create database schema with audit_log table and initial configuration",
+        "details": "Create PostgreSQL database schema with audit_log table containing: id (uuid primary key), operation (sign/verify enum), image_hash (sha256 varchar), algorithm (varchar), timestamp (UTC timestamp), user_id (varchar), result (success/fail enum). Create database initialization SQL script and configure it to run on container startup.",
+        "testStrategy": "Connect to PostgreSQL container and verify table structure and constraints are created correctly",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Database Schema SQL Script",
+            "description": "Create SQL script defining the audit_log table structure with all required columns and constraints",
+            "dependencies": [],
+            "details": "Create init.sql file with CREATE TABLE statement for audit_log table. Define id as UUID primary key with DEFAULT gen_random_uuid(), operation as ENUM('sign', 'verify'), image_hash as VARCHAR(64) for SHA-256 hashes, algorithm as VARCHAR(50), timestamp as TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, user_id as VARCHAR(255), and result as ENUM('success', 'fail'). Add NOT NULL constraints where appropriate and create indexes on commonly queried columns like timestamp and user_id.",
+            "status": "done",
+            "testStrategy": "Validate SQL syntax and verify table creation by running script against local PostgreSQL instance"
+          },
+          {
+            "id": 2,
+            "title": "Configure Docker PostgreSQL Initialization",
+            "description": "Configure PostgreSQL Docker container to automatically run initialization scripts on startup",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Create docker-entrypoint-initdb.d directory structure and configure docker-compose.yml to mount SQL scripts. Update PostgreSQL service in docker-compose.yml to use volume mount for /docker-entrypoint-initdb.d directory. Ensure init.sql is copied to this directory so PostgreSQL runs it automatically on first startup. Set appropriate environment variables (POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD).",
+            "status": "done",
+            "testStrategy": "Start fresh PostgreSQL container and verify audit_log table exists after initialization"
+          },
+          {
+            "id": 3,
+            "title": "Add Database Connection Configuration",
+            "description": "Configure database connection parameters and ensure proper networking between services",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "Update docker-compose.yml with PostgreSQL service configuration including environment variables for database name, user, and password. Configure network connectivity between backend and database services. Set up health checks for PostgreSQL service to ensure it's ready before backend attempts connection. Create .env.example file with database configuration variables.",
+            "status": "done",
+            "testStrategy": "Verify backend service can connect to PostgreSQL and establish database connection"
+          },
+          {
+            "id": 4,
+            "title": "Implement Database Migrations Support",
+            "description": "Set up database migration system for future schema changes and versioning",
+            "dependencies": [
+              "2.3"
+            ],
+            "details": "Create migrations directory structure within the database configuration. Implement versioning system for SQL scripts with sequential numbering (V1__initial_schema.sql). Add migration tracking table to record applied migrations. Configure system to run new migrations on container startup while preserving existing data. Document migration best practices and rollback procedures.",
+            "status": "done",
+            "testStrategy": "Create test migration and verify it runs correctly, check migration tracking table records applied changes"
+          },
+          {
+            "id": 5,
+            "title": "Validate Complete Database Setup",
+            "description": "Perform end-to-end testing of database initialization and verify all components work together",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3",
+              "2.4"
+            ],
+            "details": "Create comprehensive test suite that validates complete database setup. Test fresh container startup, verify audit_log table structure matches requirements, test all column constraints and data types. Validate that database persists data across container restarts using Docker volumes. Test connection from backend service and perform basic CRUD operations on audit_log table. Document database schema and setup process.",
+            "status": "done",
+            "testStrategy": "Run docker-compose down && docker-compose up and verify complete system works, test data persistence and backend connectivity"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Backend Core Structure and Dependencies",
+        "description": "Setup Spring Boot 3 application with Java 21, focusing on Spring Data JPA and ORM configuration with Hibernate for proper entity management",
+        "status": "done",
+        "dependencies": [
+          21
+        ],
+        "priority": "high",
+        "details": "Initialize Spring Boot 3 project with Java 21. Configure Spring Data JPA with Hibernate ORM for PostgreSQL integration. Add dependencies: spring-boot-starter-web, spring-boot-starter-data-jpa, postgresql driver, hibernate-core, spring-boot-starter-security for basic auth, image processing libraries (ImageIO, metadata-extractor), cryptography libraries (Bouncy Castle). Configure application.yml with database connection settings, JPA/Hibernate properties (ddl-auto, show-sql, dialect). Create JPA entity base classes with proper annotations (@Entity, @Table, @Id, @GeneratedValue). Set up repository interfaces extending JpaRepository. Create basic application structure with controllers, services, repositories, and entities packages following Spring Boot conventions.",
+        "testStrategy": "Verify Spring Boot application starts successfully, database connection is established, JPA context loads properly, and health endpoint returns 200. Test basic entity persistence and retrieval operations.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Spring Boot 3 project with Java 21",
+            "description": "Create new Spring Boot 3 project structure with Java 21 configuration",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Configure Spring Data JPA and Hibernate dependencies",
+            "description": "Add and configure spring-boot-starter-data-jpa, hibernate-core, and postgresql driver dependencies",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Setup database connection and JPA configuration",
+            "description": "Configure application.yml with PostgreSQL connection settings and Hibernate properties (dialect, ddl-auto, show-sql)",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create JPA entity base classes and annotations",
+            "description": "Set up base entity classes with proper JPA annotations (@Entity, @Table, @Id, @GeneratedValue) and establish entity package structure",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement repository interfaces with JpaRepository",
+            "description": "Create repository package and base repository interfaces extending JpaRepository for entity persistence operations",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add remaining project dependencies",
+            "description": "Include spring-boot-starter-web, spring-boot-starter-security, image processing libraries (ImageIO, metadata-extractor), and cryptography libraries (Bouncy Castle)",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Create basic application package structure",
+            "description": "Set up controllers, services, repositories, and entities packages following Spring Boot conventions",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Test JPA configuration and entity persistence",
+            "description": "Verify database connection, JPA context loading, and basic entity CRUD operations work correctly",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Cryptographic Key Management System",
+        "description": "Create key generation, storage, rotation, and management functionality with Ed25519, ECDSA P-256, and RSA-3072 support",
+        "details": "Implement KeyManagementService with support for Ed25519 (default), ECDSA P-256, and RSA-3072 algorithms. Create key generation methods, secure storage using Java KeyStore format, and rotation functionality with validity periods. Implement key selection logic based on algorithm preference and validity ranges. Store keys in Docker volume mount for persistence.",
+        "testStrategy": "Unit tests for key generation, rotation, and retrieval. Verify keys persist across container restarts",
+        "priority": "high",
+        "dependencies": [
+          13
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Algorithm-Specific Key Generation Service",
+            "description": "Implement KeyGenerationService with methods for Ed25519, ECDSA P-256, and RSA-3072 key generation using Java's standard cryptographic libraries and NIST-certified secure random number generators",
+            "details": "Create service class with methods: generateEd25519KeyPair(), generateEcdsaP256KeyPair(), generateRsa3072KeyPair(). Use SecureRandom.getInstanceStrong() for entropy. Implement proper key encoding (Base64) for database storage. Include key size validation and algorithm-specific parameters.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 2,
+            "title": "Implement Secure Key Storage and Retrieval Service",
+            "description": "Create KeyStorageService that securely stores and retrieves cryptographic keys using the existing SigningKey JPA entity with proper encryption at rest",
+            "details": "Implement service with methods: storeKey(), retrieveActiveKey(), retrieveKeyById(), listActiveKeys(). Add encryption/decryption for private key data before database storage. Integrate with SigningKeyRepository and handle key lifecycle states. Include validation for key integrity and expiration checks.",
+            "status": "done",
+            "dependencies": [
+              "4.1"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 3,
+            "title": "Create Key Rotation and Lifecycle Management Service",
+            "description": "Implement automated key rotation policies with configurable schedules, key expiration handling, and lifecycle state management",
+            "details": "Create KeyRotationService with methods: rotateKey(), scheduleRotation(), handleExpiredKeys(), validateKeyLifecycle(). Implement policy-driven rotation based on time intervals, usage counts, or manual triggers. Integrate with KeyRotationLog entity for audit trails. Include graceful key transition and overlap periods.",
+            "status": "done",
+            "dependencies": [
+              "4.2"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 4,
+            "title": "Implement Key Access Control and Security Validation",
+            "description": "Create access control mechanisms with role-based permissions, dual control for critical operations, and comprehensive security validation",
+            "details": "Implement KeyAccessControlService with methods: validateAccess(), enforceRoleBasedPermissions(), requireDualApproval(), logSecurityEvents(). Integrate with Spring Security for authentication. Include rate limiting, suspicious activity detection, and automatic security policy enforcement. Add annotations for method-level security.",
+            "status": "done",
+            "dependencies": [
+              "4.2"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 5,
+            "title": "Create Comprehensive Key Management Facade Service",
+            "description": "Implement main KeyManagementService that orchestrates all key operations and provides a unified API for the application",
+            "details": "Create facade service with methods: generateNewKey(), getSigningKey(), rotateKeys(), validateKeyIntegrity(), getKeyStatistics(). Coordinate between generation, storage, rotation, and access control services. Implement transaction management, error handling, and performance optimization. Include caching for frequently accessed keys.",
+            "status": "done",
+            "dependencies": [
+              "4.1",
+              "4.2",
+              "4.3",
+              "4.4"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 6,
+            "title": "Implement Key Performance Optimization and Caching",
+            "description": "Add performance optimizations, caching mechanisms, and efficient key retrieval strategies for high-throughput operations",
+            "details": "Implement caching with Spring Cache abstraction, optimize database queries with proper indexing, add connection pooling, and implement lazy loading for key data. Create performance monitoring, metrics collection, and automatic cache invalidation policies. Include memory management and garbage collection optimization for key objects.",
+            "status": "done",
+            "dependencies": [
+              "4.5"
+            ],
+            "parentTaskId": 4
+          },
+          {
+            "id": 7,
+            "title": "Create Comprehensive Unit and Integration Tests",
+            "description": "Implement thorough testing suite for all key management functionality including unit tests, integration tests, and security validation tests",
+            "details": "Create test classes for all services: KeyGenerationServiceTest, KeyStorageServiceTest, KeyRotationServiceTest, KeyAccessControlServiceTest, KeyManagementServiceTest. Include integration tests with @SpringBootTest, security tests, performance tests, and edge case validation. Add test key generation, mock security contexts, and database test fixtures.",
+            "status": "done",
+            "dependencies": [
+              "4.5"
+            ],
+            "parentTaskId": 4
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Image Signature Embedding System",
+        "description": "Create functionality to embed digital signatures into PNG and JPEG image metadata without corrupting image structure",
+        "details": "Implement ImageSigningService that embeds signatures in PNG iTXt chunks and JPEG COM/APP segments. Use SHA-256 for hashing image data, add UTC timestamp at signing time. Preserve original image quality without recompression. Create signature format that includes algorithm, timestamp, key ID, and signature bytes. Handle up to 100MB file sizes efficiently.",
+        "testStrategy": "Test with various PNG/JPEG files up to 100MB, verify image integrity and signature embedding, test with image viewers to ensure no corruption",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Detached Signature Generation",
+        "description": "Create functionality to generate detached .sig files containing image signatures",
+        "details": "Implement DetachedSignatureService that generates .sig files containing: original filename, image hash (SHA-256), algorithm used, timestamp (UTC), key ID, and signature bytes. Use structured format (JSON or custom binary) for .sig file content. Ensure .sig files can be associated with their corresponding images.",
+        "testStrategy": "Generate .sig files for test images, verify content structure and signature validation against original images",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement Image Signature Verification System",
+        "description": "Create verification functionality for both embedded and detached signatures with comprehensive validation",
+        "details": "Implement ImageVerificationService that validates embedded signatures in PNG/JPEG metadata and detached .sig files. Extract signature data, verify against image content using SHA-256 hash, validate timestamp and key validity periods. Return verification result with signer key ID, algorithm, timestamp, and validity status (valid/invalid with reason).",
+        "testStrategy": "Test verification of signed images, tampered images, expired signatures, and invalid signatures. Verify both embedded and detached signature validation",
+        "priority": "high",
+        "dependencies": [
+          5,
+          6
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement REST API Endpoints with Spring Data JPA Integration",
+        "description": "Create Spring Boot REST controllers for signing, verification, key management, and audit log operations with proper JPA repository integration",
+        "details": "Implement REST controllers: POST /sign (accepts multipart image, returns signed image or .sig file), POST /verify (accepts image/sig file, returns verification result), POST /keys/rotate (rotates signing keys), GET /logs (audit log with JPA-based filtering and pagination). Use Spring Data repositories for data access abstraction. Add request/response DTOs, file upload handling up to 100MB, basic authentication, and comprehensive error handling. Configure multipart file handling and validation.",
+        "testStrategy": "Integration tests for all endpoints using MockMvc, test file uploads, authentication, and error scenarios. Verify proper JPA repository integration and pagination functionality.",
+        "priority": "high",
+        "dependencies": [
+          13,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Audit Logging and Authentication System",
+        "description": "Create comprehensive audit logging for all sign/verify operations with PostgreSQL persistence and simple username/password authentication",
+        "details": "Implement AuditLogService that captures all sign/verify operations using JPA entities to persist to PostgreSQL audit_log table. Log operation type, image hash (SHA-256), algorithm used, timestamp, user_id, and operation result. Create simple authentication system with username/password (sufficient for localhost). Add logging interceptors to capture operation details. Implement Spring Security for basic authentication. Create audit log query API with JPA-based filtering and pagination. Use UUID for primary keys.",
+        "testStrategy": "Verify audit entries are created for every operation, test query functionality and filtering, check database persistence. Test authentication functionality and protected endpoints.",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Frontend Application",
+        "description": "Create Vite React TypeScript frontend with drag-and-drop upload, signing, verification, and audit log viewing capabilities",
+        "details": "Create Vite React TypeScript application with components for: image upload with drag-and-drop (up to 100MB), signing interface with algorithm selection (Ed25519, ECDSA P-256, RSA-3072), verification tab for uploaded images, image preview functionality, download links for signed images/.sig files, audit logs view with filtering. Implement API client for backend communication, basic authentication, and error handling.",
+        "testStrategy": "E2E tests for upload/sign/verify workflows, test with various image formats and sizes, verify UI responsiveness and error handling",
+        "priority": "medium",
+        "dependencies": [
+          8,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Setup Docker Compose Infrastructure",
+        "description": "Create Docker Compose configuration with frontend (Vite), backend (Spring Boot), and PostgreSQL database services",
+        "details": "Create docker-compose.yml with three services: frontend (Vite on port 5173), backend (Spring Boot on port 8080), and PostgreSQL database (port 5432). Configure environment variables, networking, and volume mounts for keys. Include Dockerfiles for frontend and backend services. Set up proper service dependencies and health checks.",
+        "testStrategy": "Verify all three services start successfully with docker-compose up. Test connectivity between services and confirm ports are accessible on localhost.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Initialize Spring Boot Backend with JPA Configuration",
+        "description": "Create Spring Boot 3 application with Java 21, Spring Data JPA, Hibernate, and PostgreSQL connectivity",
+        "details": "Initialize Spring Boot 3 project with Java 21. Configure Spring Data JPA with Hibernate for ORM. Set up PostgreSQL connection with application.yml/properties. Create base project structure with controllers, services, repositories, and entities packages. Configure transaction management and JPA settings. Add required dependencies: spring-boot-starter-data-jpa, postgresql-driver, spring-boot-starter-web.",
+        "testStrategy": "Verify Spring Boot application starts successfully and connects to PostgreSQL database. Test basic JPA configuration with a simple health check endpoint.",
+        "priority": "high",
+        "dependencies": [
+          21
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Spring Boot 3 Project Structure",
+            "description": "Create new Spring Boot 3.x project with Java 21 using Spring Initializr or Maven archetype",
+            "dependencies": [],
+            "details": "Generate Spring Boot 3 project with Java 21, Maven build system. Create main application class with @SpringBootApplication annotation. Set up basic project structure with src/main/java and src/main/resources directories. Configure Maven wrapper and basic pom.xml structure.",
+            "status": "done",
+            "testStrategy": "Verify project compiles successfully with 'mvn clean compile' and main application class can be instantiated"
+          },
+          {
+            "id": 2,
+            "title": "Add Spring Data JPA and PostgreSQL Dependencies",
+            "description": "Configure Maven dependencies for Spring Data JPA, Hibernate, PostgreSQL driver, and web starter",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "Add to pom.xml: spring-boot-starter-data-jpa (includes Hibernate), postgresql driver, spring-boot-starter-web, spring-boot-starter-test. Configure Spring Boot BOM for version management. Add any additional dependencies for validation and transaction management.",
+            "status": "done",
+            "testStrategy": "Run 'mvn dependency:tree' to verify all dependencies are resolved correctly without conflicts"
+          },
+          {
+            "id": 3,
+            "title": "Configure Database Connection Properties",
+            "description": "Set up PostgreSQL connection configuration in application.yml with JPA/Hibernate settings",
+            "dependencies": [
+              "12.2"
+            ],
+            "details": "Create application.yml with PostgreSQL datasource configuration (URL, username, password, driver-class-name). Configure JPA properties: hibernate.ddl-auto, show-sql, format-sql, database-platform. Set up connection pooling with HikariCP. Configure transaction management settings.",
+            "status": "done",
+            "testStrategy": "Application should start without database connection errors when PostgreSQL is running"
+          },
+          {
+            "id": 4,
+            "title": "Create Base Package Structure",
+            "description": "Establish standard Spring Boot package hierarchy with controllers, services, repositories, and entities",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "Create package structure under main package: controllers/, services/, repositories/, entities/, dto/, config/. Add placeholder classes or interfaces in each package to establish the structure. Follow Spring Boot naming conventions and package organization best practices.",
+            "status": "done",
+            "testStrategy": "Verify package structure is created correctly and placeholder classes compile without errors"
+          },
+          {
+            "id": 5,
+            "title": "Configure JPA and Transaction Management",
+            "description": "Set up JPA configuration, entity scanning, and declarative transaction management",
+            "dependencies": [
+              "12.3",
+              "12.4"
+            ],
+            "details": "Configure @EnableJpaRepositories annotation on main application class or configuration class. Set up @EnableTransactionManagement for declarative transactions. Configure JPA entity scanning base packages. Add any custom JPA configuration beans for advanced settings like naming strategies or custom repository implementations.",
+            "status": "done",
+            "testStrategy": "Application starts successfully with JPA context loaded and transaction manager beans are created. Verify with actuator health endpoint if available."
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Create Database Schema with JPA Entities",
+        "description": "Design and implement JPA entities for audit_log, signing_keys, and key_rotation_log tables with proper ORM mappings",
+        "details": "Create JPA entities: AuditLog (@Id UUID, @Enumerated operation, image_hash, algorithm, @CreationTimestamp, user_id, @Enumerated result), SigningKeys (key management with lifecycle tracking), KeyRotationLog (audit trail). Use proper JPA annotations, constraints, and relationships. Set up Flyway or Liquibase for database migrations alongside JPA. Configure UUID generation strategies and enum mappings.",
+        "testStrategy": "Verify database tables are created correctly through JPA entity mapping. Test CRUD operations on each entity through repository interfaces.",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up JPA configuration and database connection",
+            "description": "Configure Spring Data JPA, database connection properties, and entity scanning in the Spring Boot application",
+            "dependencies": [],
+            "details": "Add JPA and PostgreSQL dependencies to pom.xml. Configure application.yml with database connection properties (URL, username, password). Set up JPA configuration including dialect, ddl-auto, and show-sql properties. Configure entity package scanning and repository base packages.",
+            "status": "done",
+            "testStrategy": "Verify database connection is established successfully and JPA configuration loads without errors"
+          },
+          {
+            "id": 2,
+            "title": "Create enum classes for JPA entities",
+            "description": "Define enum classes for operation types, algorithms, and result statuses used across entities",
+            "dependencies": [],
+            "details": "Create OperationType enum (SIGN, VERIFY), AlgorithmType enum (ED25519, ECDSA_P256, RSA_3072), and ResultStatus enum (SUCCESS, FAILURE). Implement proper string representations and validation methods for database storage.",
+            "status": "done",
+            "testStrategy": "Unit tests to verify enum values and string conversions work correctly"
+          },
+          {
+            "id": 3,
+            "title": "Implement AuditLog JPA entity",
+            "description": "Create AuditLog entity with proper JPA annotations and UUID generation strategy",
+            "dependencies": [
+              "13.2"
+            ],
+            "details": "Create AuditLog entity with @Entity annotation. Define fields: id (UUID with @GeneratedValue), operation (@Enumerated), imageHash (String), algorithm (@Enumerated), timestamp (@CreationTimestamp), userId (String), result (@Enumerated). Configure UUID generation strategy and proper column mappings.",
+            "status": "done",
+            "testStrategy": "Test entity mapping, UUID generation, and enum conversions through JPA repository operations"
+          },
+          {
+            "id": 4,
+            "title": "Implement SigningKeys and KeyRotationLog JPA entities",
+            "description": "Create SigningKeys entity for key management and KeyRotationLog for audit trail with proper relationships",
+            "dependencies": [
+              "13.2"
+            ],
+            "details": "Create SigningKeys entity with key lifecycle tracking (id, keyData, algorithm, createdAt, expiresAt, isActive). Create KeyRotationLog entity for audit trail (id, oldKeyId, newKeyId, rotationTimestamp, reason). Establish proper JPA relationships between entities and configure cascade operations.",
+            "status": "done",
+            "testStrategy": "Test entity relationships, key lifecycle operations, and rotation logging through repository interfaces"
+          },
+          {
+            "id": 5,
+            "title": "Set up Flyway database migrations",
+            "description": "Configure Flyway for database schema versioning and create initial migration scripts for all entities",
+            "dependencies": [
+              "13.3",
+              "13.4"
+            ],
+            "details": "Add Flyway dependency and configure migration settings. Create V1__Create_audit_log_table.sql, V2__Create_signing_keys_table.sql, and V3__Create_key_rotation_log_table.sql migration files. Ensure migrations match JPA entity definitions and include proper indexes and constraints.",
+            "status": "done",
+            "testStrategy": "Verify Flyway migrations run successfully and create correct database schema matching JPA entity mappings"
+          }
+        ]
+      },
+      {
+        "id": 21,
+        "title": "Implement ORM-Based Database Schema with JPA Entities and Flyway Migrations",
+        "description": "Replace manual SQL approach with modern Spring Boot ORM using JPA entities, Spring Data JPA auditing, and Flyway migrations for production-ready database schema management.",
+        "details": "Create JPA entity for AuditLog with @Entity, @Table annotations, UUID primary key (@Id @GeneratedValue(generator = \"UUID\")), and proper field mappings (@Column, @Enumerated for operation/result enums). Implement Spring Data JPA auditing with @CreatedDate, @LastModifiedDate, @CreatedBy, @LastModifiedBy annotations and @EnableJpaAuditing configuration. Configure Flyway migrations in src/main/resources/db/migration with V1__Initial_Schema.sql to replace existing manual SQL. Set up entity-first to migration-first workflow by generating migrations from JPA entities using Flyway Maven plugin. Configure spring.jpa.hibernate.ddl-auto=validate to ensure schema consistency. Integrate PostgreSQL-specific Flyway configurations with proper datasource settings and migration validation. Create AuditLogRepository extending JpaRepository with custom query methods for filtering operations.",
+        "testStrategy": "Verify JPA entities map correctly to database tables through integration tests. Test Spring Data JPA auditing fields are automatically populated on entity creation/updates. Validate Flyway migrations execute successfully and create expected schema structure. Test repository CRUD operations and custom query methods. Verify spring.jpa.hibernate.ddl-auto=validate mode prevents schema drift by testing with mismatched entity definitions.",
+        "status": "done",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create JPA AuditLog Entity with Proper Annotations",
+            "description": "Create the core JPA entity class for AuditLog with all required annotations, field mappings, and UUID primary key configuration",
+            "dependencies": [],
+            "details": "Create AuditLog.java entity class with @Entity and @Table annotations. Add UUID primary key with @Id and @GeneratedValue(generator = \"UUID\") annotations. Define all fields with proper @Column mappings including operation and result enums with @Enumerated annotation. Include proper constructors, getters, setters, and toString methods. Configure UUID generator strategy for PostgreSQL compatibility.",
+            "status": "done",
+            "testStrategy": "Unit tests to verify entity annotations are correctly applied and fields map to expected database columns. Test UUID generation and enum mappings."
+          },
+          {
+            "id": 2,
+            "title": "Configure Spring Data JPA Auditing",
+            "description": "Implement automatic auditing functionality with @CreatedDate, @LastModifiedDate, @CreatedBy, and @LastModifiedBy fields",
+            "dependencies": [
+              "21.1"
+            ],
+            "details": "Add auditing fields to AuditLog entity with @CreatedDate, @LastModifiedDate, @CreatedBy, and @LastModifiedBy annotations. Create @EnableJpaAuditing configuration class with AuditorAware implementation for capturing current user context. Configure automatic timestamp population on entity creation and updates. Ensure proper data types (LocalDateTime for timestamps, String for user fields).",
+            "status": "done",
+            "testStrategy": "Integration tests to verify auditing fields are automatically populated on entity save and update operations. Test AuditorAware implementation returns correct user context."
+          },
+          {
+            "id": 3,
+            "title": "Set Up Flyway Migration Configuration",
+            "description": "Configure Flyway for database migration management with PostgreSQL-specific settings and create initial schema migration",
+            "dependencies": [],
+            "details": "Add Flyway dependency to pom.xml and configure application.properties with Flyway settings including migration locations (classpath:db/migration), validation enabled, and PostgreSQL-specific configurations. Create src/main/resources/db/migration directory structure. Configure spring.jpa.hibernate.ddl-auto=validate to ensure schema consistency. Set up Flyway Maven plugin for migration management.",
+            "status": "done",
+            "testStrategy": "Test Flyway configuration loads correctly and migration directory is recognized. Verify ddl-auto=validate setting prevents schema drift."
+          },
+          {
+            "id": 4,
+            "title": "Create Initial Database Migration Script",
+            "description": "Create V1__Initial_Schema.sql migration file that defines the complete database schema based on JPA entities",
+            "dependencies": [
+              "21.1",
+              "21.3"
+            ],
+            "details": "Create V1__Initial_Schema.sql in src/main/resources/db/migration with PostgreSQL-specific DDL statements. Include CREATE TABLE statement for audit_log with UUID primary key, proper column definitions matching JPA entity fields, enum types for operation and result fields, timestamp columns with timezone support, and appropriate indexes for query performance. Ensure migration is idempotent and includes proper constraints.",
+            "status": "done",
+            "testStrategy": "Test migration executes successfully against clean PostgreSQL database. Verify table structure matches JPA entity definitions and all constraints are properly created."
+          },
+          {
+            "id": 5,
+            "title": "Create AuditLogRepository with Custom Query Methods",
+            "description": "Implement Spring Data JPA repository interface with custom query methods for filtering and retrieving audit log entries",
+            "dependencies": [
+              "21.2"
+            ],
+            "details": "Create AuditLogRepository interface extending JpaRepository<AuditLog, UUID>. Add custom query methods using @Query annotations or method name conventions for filtering by operation type, result status, date ranges, and user. Implement pagination support with Pageable parameters. Add methods for finding recent entries, filtering by specific criteria, and counting operations by type.",
+            "status": "done",
+            "testStrategy": "Integration tests for all repository methods including CRUD operations, custom queries, pagination, and filtering. Test query performance with sample data and verify proper SQL generation."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-24T14:45:56.878Z",
+      "updated": "2025-08-25T08:19:15.762Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

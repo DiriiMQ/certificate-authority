@@ -32,5 +32,30 @@ public enum OperationType {
     /**
      * View audit log operation
      */
-    VIEW_AUDIT_LOG
+    VIEW_AUDIT_LOG,
+    
+    /**
+     * Embed signature in image metadata operation
+     */
+    EMBED_SIGNATURE,
+    
+    /**
+     * Extract signature from image metadata operation
+     */
+    EXTRACT_SIGNATURE,
+    
+    /**
+     * Verify embedded signature operation
+     */
+    VERIFY_EMBEDDED_SIGNATURE,
+    
+    /**
+     * Generate detached signature file operation
+     */
+    GENERATE_DETACHED_SIGNATURE,
+    
+    /**
+     * Verify detached signature operation
+     */
+    VERIFY_DETACHED_SIGNATURE
 }

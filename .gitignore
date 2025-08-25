@@ -115,3 +115,7 @@ coverage/
 
 # Kubernetes
 *.kubeconfig
+
+# Task files
+# tasks.json
+# tasks/ 
